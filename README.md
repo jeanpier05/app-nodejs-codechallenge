@@ -1,82 +1,142 @@
-# Yape Code Challenge :rocket:
 
-Our code challenge will let you marvel us with your Jedi coding skills :smile:. 
+# Guía de Instalación
 
-Don't forget that the proper way to submit your work is to fork the repo and create a PR :wink: ... have fun !!
+1. Comienza clonando este proyecto en tu estación de trabajo.
 
-- [Problem](#problem)
-- [Tech Stack](#tech_stack)
-- [Send us your challenge](#send_us_your_challenge)
+```bash
+  git clone https://github.com/jeanpier05/app-nodejs-codechallenge.git
+```
+2. Iniciar contenedores
 
-# Problem
+```bash
+docker-compose up
+```
+Asegurarse todo esté activo
 
-Every time a financial transaction is created it must be validated by our anti-fraud microservice and then the same service sends a message back to update the transaction status.
-For now, we have only three transaction statuses:
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/docker-composer.png)
 
-<ol>
-  <li>pending</li>
-  <li>approved</li>
-  <li>rejected</li>  
-</ol>
+3. Iniciar microservicio anti-fraude
 
-Every transaction with a value greater than 1000 should be rejected.
+Acceder a la carpeta anti-fraud-ms
 
-```mermaid
-  flowchart LR
-    Transaction -- Save Transaction with pending Status --> transactionDatabase[(Database)]
-    Transaction --Send transaction Created event--> Anti-Fraud
-    Anti-Fraud -- Send transaction Status Approved event--> Transaction
-    Anti-Fraud -- Send transaction Status Rejected event--> Transaction
-    Transaction -- Update transaction Status event--> transactionDatabase[(Database)]
+**Instalación**
+
+```bash
+$ npm install
 ```
 
-# Tech Stack
+**Renombrar .env.template a .env**
 
-<ol>
-  <li>Node. You can use any framework you want (i.e. Nestjs with an ORM like TypeOrm or Prisma) </li>
-  <li>Any database</li>
-  <li>Kafka</li>    
-</ol>
+**Ejecutar aplicación**
 
-We do provide a `Dockerfile` to help you get started with a dev environment.
+```bash
+# watch mode
+$ npm run start:dev
+```
 
-You must have two resources:
+4. Iniciar microservicio transaction
 
-1. Resource to create a transaction that must containt:
+Acceder a la carpeta transaction-ms
 
-```json
-{
-  "accountExternalIdDebit": "Guid",
-  "accountExternalIdCredit": "Guid",
-  "tranferTypeId": 1,
-  "value": 120
+**Instalación**
+
+```bash
+$ npm install
+```
+
+**Renombrar .env.template a .env**
+
+**Ejecutar aplicación**
+
+```bash
+# watch mode
+$ npm run start:dev
+```
+
+5. Iniciar api/graphql
+Acceder a la carpeta "api"
+
+**Instalación**
+
+```bash
+$ npm install
+```
+
+**Renombrar .env.template a .env**
+
+**Ejecutar aplicación**
+
+```bash
+# watch mode
+$ npm run start:dev
+```
+
+Utilizar API en http://localhost:3000/graphql
+
+Query para creación de transacción
+```javascript
+mutation {
+    createTransaction(createTransactionData: 
+      { 
+        accountExternalIdDebit: "b1178d22-70d3-4d29-b19c-7a5f06523a19", 
+        accountExternalIdCredit: "29ba16ca-9ffd-49f0-aa44-823a2a4ddbfd", 
+        tranferTypeId: 2, 
+        value: 900
+      }) {
+      transactionExternalId,
+      transactionType {
+        transactionTypeName
+      },
+      transactionStatus {
+        transactionStatusName
+      },
+      value,
+      createdAt
+    }
 }
 ```
 
-2. Resource to retrieve a transaction
-
-```json
-{
-  "transactionExternalId": "Guid",
-  "transactionType": {
-    "name": ""
-  },
-  "transactionStatus": {
-    "name": ""
-  },
-  "value": 120,
-  "createdAt": "Date"
+Ejemplo de query para consulta de transacción
+```javascript
+query {
+  transaction(transactionExternalId: "e3a06f7b-d086-4ad5-b547-6799d5bd9aab") {
+    transactionExternalId
+    transactionType {
+      transactionTypeName
+    }
+    transactionStatus {
+      transactionStatusName
+    }
+    value
+    createdAt
+  }
 }
+
 ```
 
-## Optional
+# Prueba - Flujo de Transacción
 
-You can use any approach to store transaction data but you should consider that we may deal with high volume scenarios where we have a huge amount of writes and reads for the same data at the same time. How would you tackle this requirement?
+Crear transacción. Registra con estado 'pending'
 
-You can use Graphql;
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/transaction_pending.png)
 
-# Send us your challenge
+Mensaje recibido por ms anti-fraude: transacción pendiente. Solo evalúa regla de monto
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/anti-fraud.png)
 
-When you finish your challenge, after forking a repository, you **must** open a pull request to our repository. There are no limitations to the implementation, you can follow the programming paradigm, modularization, and style that you feel is the most appropriate solution.
+Mensaje recibido por ms transacción: transacción 'approved' o 'rejected'. Actualiza estado final de transacción
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/transaction_final.png)
 
-If you have any questions, please let us know.
+Consulta a consola postgres database
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/posgrest.png)
+
+Consulta en graphql
+![App Screenshot](https://raw.githubusercontent.com/jeanpier05/images/main/query-graphql.png)
+
+## Yape Code Challenge
+
+[Problem](https://github.com/yaperos/app-nodejs-codechallenge/blob/main/README.md)
+## Authors
+
+- [@jeanpier05](https://github.com/jeanpier05)
+- Jeans Pierre Graos Neciosup
+
